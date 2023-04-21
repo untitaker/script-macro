@@ -2,13 +2,16 @@
 
 extern crate proc_macro;
 
-use std::fmt::{Debug};
+use std::fmt::Debug;
 use std::path::PathBuf;
 
 use proc_macro::TokenStream;
-use rhai::{Engine, Scope, packages::Package, ImmutableString, Dynamic, EvalAltResult, Position};
+use rhai::{packages::Package, Dynamic, Engine, EvalAltResult, ImmutableString, Position, Scope};
 use rhai_fs::FilesystemPackage;
-use syn::{parse_macro_input, LitStr, parse::{ParseStream, Parse}};
+use syn::{
+    parse::{Parse, ParseStream},
+    parse_macro_input, LitStr,
+};
 
 struct RunScriptInput {
     script_source: LitStr,
@@ -27,11 +30,11 @@ fn get_source_context(source_code: &str, padding: usize, pos: Position) -> Strin
 
     if let Some(lineno) = pos.line() {
         let lines: Vec<_> = source_code.split('\n').collect();
-        for (i, line) in lines[
-            (lineno - padding).clamp(0, lines.len())
-            ..
-            (lineno + padding).clamp(0, lines.len())
-        ].iter().enumerate() {
+        for (i, line) in lines
+            [(lineno - padding).clamp(0, lines.len())..(lineno + padding).clamp(0, lines.len())]
+            .iter()
+            .enumerate()
+        {
             if i == padding - 1 {
                 source_snippet.push_str("--> ");
             } else {
@@ -51,7 +54,8 @@ fn handle_runtime_error(source_code: &str, e: Box<EvalAltResult>) {
         let mut inner_error = &e;
 
         while let EvalAltResult::ErrorInModule(_, err, ..)
-            | EvalAltResult::ErrorInFunctionCall(_, _, err, ..) = &**inner_error {
+        | EvalAltResult::ErrorInFunctionCall(_, _, err, ..) = &**inner_error
+        {
             inner_error = err;
         }
 
@@ -66,7 +70,10 @@ pub fn run_script(params: TokenStream) -> TokenStream {
     let args = parse_macro_input!(params as RunScriptInput);
 
     let engine = get_default_engine();
-    let output: String = engine.eval(&args.script_source.value()).map_err(|e| handle_runtime_error(&args.script_source.value(), e)).unwrap();
+    let output: String = engine
+        .eval(&args.script_source.value())
+        .map_err(|e| handle_runtime_error(&args.script_source.value(), e))
+        .unwrap();
 
     output.parse().expect("invalid token stream")
 }
@@ -78,7 +85,10 @@ pub fn run_script_on(params: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut scope = Scope::new();
     scope.push("item", item.to_string());
-    let output: String = engine.eval_with_scope(&mut scope, &args.script_source.value()).map_err(|e| handle_runtime_error(&args.script_source.value(), e)).unwrap();
+    let output: String = engine
+        .eval_with_scope(&mut scope, &args.script_source.value())
+        .map_err(|e| handle_runtime_error(&args.script_source.value(), e))
+        .unwrap();
 
     output.parse().expect("invalid token stream")
 }
@@ -111,7 +121,9 @@ fn helper_parse_yaml(input: ImmutableString) -> Result<Dynamic, Box<EvalAltResul
 }
 
 fn helper_stringify_yaml(input: Dynamic) -> Result<ImmutableString, Box<EvalAltResult>> {
-    serde_yaml::to_string(&input).map(From::from).map_err(coerce_err)
+    serde_yaml::to_string(&input)
+        .map(From::from)
+        .map_err(coerce_err)
 }
 
 fn helper_parse_json(input: ImmutableString) -> Result<Dynamic, Box<EvalAltResult>> {
@@ -119,20 +131,27 @@ fn helper_parse_json(input: ImmutableString) -> Result<Dynamic, Box<EvalAltResul
 }
 
 fn helper_stringify_json(input: Dynamic) -> Result<ImmutableString, Box<EvalAltResult>> {
-    serde_json::to_string(&input).map(From::from).map_err(coerce_err)
+    serde_json::to_string(&input)
+        .map(From::from)
+        .map_err(coerce_err)
 }
-
 
 fn helper_slugify_ident(input: ImmutableString) -> ImmutableString {
     let mut is_first_char = true;
-    input.as_str().replace(|x: char| {
-        if is_first_char && x.is_ascii_digit() {
-            return true;
-        }
-        is_first_char = false;
+    input
+        .as_str()
+        .replace(
+            |x: char| {
+                if is_first_char && x.is_ascii_digit() {
+                    return true;
+                }
+                is_first_char = false;
 
-        !matches!(x, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_')
-    }, "_").into()
+                !matches!(x, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_')
+            },
+            "_",
+        )
+        .into()
 }
 
 fn helper_glob(pattern: ImmutableString) -> Result<Dynamic, Box<EvalAltResult>> {
@@ -148,5 +167,11 @@ fn helper_glob(pattern: ImmutableString) -> Result<Dynamic, Box<EvalAltResult>> 
 }
 
 fn helper_basename(input: PathBuf) -> Result<ImmutableString, Box<EvalAltResult>> {
-    Ok(input.file_name().unwrap_or(input.as_os_str()).to_str().ok_or("basename is not valid unicode")?.to_owned().into())
+    Ok(input
+        .file_name()
+        .unwrap_or(input.as_os_str())
+        .to_str()
+        .ok_or("basename is not valid unicode")?
+        .to_owned()
+        .into())
 }
