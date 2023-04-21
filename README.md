@@ -123,6 +123,34 @@ Additionally, the following functions are defined:
 
 Check out the [example crates](./example_crates) to see all of the above in action.
 
+## Background
+
+I often find myself in situations where I want to programmatically generate
+testcases from a set of files. In Python, that is as simple as
+`@pytest.mark.parametrize("parameter", <arbitrary logic>)`. The options I have
+for that in Rust are:
+
+* Hand-written `proc_macro` -- maximal flexibility, but it requires a separate
+  crate, a few of dependencies written by dtolnay and generally quite a lot of
+  boilerplate. Also somewhat heavy on compile-times (though I can't really
+  claim `script-macro` is any more lightweight)
+
+* [`test-generator`](https://docs.rs/test-generator) crate -- useful for
+  generating a testcase per file. But sometimes I want to generate multiple
+  testcases per file!
+
+* Custom test harness using
+  [`libtest-mimic`](https://github.com/LukasKalbertodt/libtest-mimic) --
+  Requires complete rewrite into a separate test framework (vs just taking an
+  existing test and "adding parametrization to it"). However, this is desirable
+  over any form of codegen when there are a lot of testcases (10k+) to generate.
+
+* Macro 1.0 using `macro_rules!` -- does not work for arbitrary logic or for
+  file-system access.
+
+This is an attempt to lower the barrier of entry to write a `proc_macro`,
+though I don't really use it anywhere right now.
+
 ## License
 
 Licensed under the MIT, see [`./LICENSE`](./LICENSE).
