@@ -63,6 +63,17 @@ Macros are not Rust source code, instead they are written in the [RHAI](https://
   similar tradeoffs about compilation speed (compile runtime for all macros
   once, run all macros without compilation)
 
+## Seriously?
+
+I seriously do wish that proc_macros were easier to write (inline with other
+code) and didn't contribute as much to compile time. One area where this comes
+up for me particularly often is programmatic test generation (or,
+parametrization).
+
+This is my best shot at making this happen today, but that doesn't mean I'm
+convinced that the end result is viable for production use. I hope that it
+inspires somebody else to build something better.
+
 ## API
 
 There are two main macros to choose from:
@@ -92,7 +103,7 @@ There are two main macros to choose from:
       return `fn main() { println!("hello world"); }`;
   "##);
   ```
-
+  
 ## Script API
 
 From within the script, the entire stdlib of RHAI + the functions in
@@ -122,34 +133,6 @@ Additionally, the following functions are defined:
 ## Examples
 
 Check out the [example crates](./example_crates) to see all of the above in action.
-
-## Background
-
-I often find myself in situations where I want to programmatically generate
-testcases from a set of files. In Python, that is as simple as
-`@pytest.mark.parametrize("parameter", <arbitrary logic>)`. The options I have
-for that in Rust are:
-
-* Hand-written `proc_macro` -- maximal flexibility, but it requires a separate
-  crate, a few of dependencies written by dtolnay and generally quite a lot of
-  boilerplate. Also somewhat heavy on compile-times (though I can't really
-  claim `script-macro` is any more lightweight)
-
-* [`test-generator`](https://docs.rs/test-generator) crate -- useful for
-  generating a testcase per file. But sometimes I want to generate multiple
-  testcases per file!
-
-* Custom test harness using
-  [`libtest-mimic`](https://github.com/LukasKalbertodt/libtest-mimic) --
-  Requires complete rewrite into a separate test framework (vs just taking an
-  existing test and "adding parametrization to it"). However, this is desirable
-  over any form of codegen when there are a lot of testcases (10k+) to generate.
-
-* Macro 1.0 using `macro_rules!` -- does not work for arbitrary logic or for
-  file-system access.
-
-This is an attempt to lower the barrier of entry to write a `proc_macro`,
-though I don't really use it anywhere right now.
 
 ## License
 
