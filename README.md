@@ -137,3 +137,14 @@ Check out the [example crates](./example_crates) to see all of the above in acti
 ## License
 
 Licensed under the MIT, see [`./LICENSE`](./LICENSE).
+
+## Other cool projects
+
+- [cargo-px](https://github.com/LukeMathWalker/cargo-px): A wrapper around
+  cargo that extends its codegen abilities.
+
+- [libtest-mimic](https://github.com/LukasKalbertodt/libtest-mimic): An
+  alternative test harness (completely removing `#[test]`) that allows you to
+  generate tests programmatically.
+
+- [watt](https://github.com/dtolnay/watt): Write proc macros in webassembly.
