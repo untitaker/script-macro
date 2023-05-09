@@ -148,3 +148,6 @@ Licensed under the MIT, see [`./LICENSE`](./LICENSE).
   generate tests programmatically.
 
 - [watt](https://github.com/dtolnay/watt): Write proc macros in webassembly.
+
+- [test-generator](https://docs.rs/test-generator/) is a simple way to produce
+  one test per data file.
