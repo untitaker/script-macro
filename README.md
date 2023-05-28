@@ -138,7 +138,7 @@ Check out the [example crates](./example_crates) to see all of the above in acti
 
 Licensed under the MIT, see [`./LICENSE`](./LICENSE).
 
-## Other cool projects
+## See also
 
 - [cargo-px](https://github.com/LukeMathWalker/cargo-px): A wrapper around
   cargo that extends its codegen abilities.
@@ -151,3 +151,5 @@ Licensed under the MIT, see [`./LICENSE`](./LICENSE).
 
 - [test-generator](https://docs.rs/test-generator/) is a simple way to produce
   one test per data file.
+
+- [my blog post on test parametrization](https://unterwaditzer.net/2023/rust-test-parametrization.html)
