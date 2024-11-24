@@ -16,9 +16,9 @@ proc-macro = true
 
 [features]
 default = []
-parse-json = ["serde_json", "rhai/serde"]
-parse-yaml = ["serde_yaml", "rhai/serde"]
-filesystem = ["rhai-fs"]
+parse-json = ["dep:serde_json", "rhai/serde"]
+parse-yaml = ["dep:serde_yaml", "rhai/serde"]
+filesystem = ["dep:rhai-fs"]
 
 [dependencies]
 glob = { version = "0.3.1", optional = true }
