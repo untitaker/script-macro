@@ -2,7 +2,7 @@
 name = "script-macro"
 authors = ["Markus Unterwaditzer <markus-honeypot@unterwaditzer.net>"]
 description = "Write proc-macros inline with other source code"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 readme = "README.md"
 license = "MIT"
