@@ -106,25 +106,39 @@ There are two main macros to choose from:
   
 ## Script API
 
-From within the script, the entire stdlib of RHAI + the functions in
-[`rhai-fs`](https://docs.rs/rhai-fs/latest/rhai_fs/) are available.
+From within the script, the stdlib of RHAI is available. Additionally the
+following features can be enabled:
 
-Additionally, the following functions are defined:
+### `features = ["parse-json"]`
 
-
-* `parse_yaml(String) -> Dynamic` -- Takes YAML payload as string and returns
-  the parsed payload as unstructured data (such as, RHAI object map or array).
+Adds `serde-json` crate and defines the following additional function:
 
 * `parse_json(String) -> Dynamic` --  Takes JSON payload as string and returns
+  the parsed payload as unstructured data (such as, RHAI object map or array).
+
+* `stringify_json(Dynamic) -> String` -- Convert a RHAI object to a YAML
+  string, inverse of `parse_json`.
+
+### `features = ["parse-yaml"]`
+
+Adds `serde-yaml` crate and defines the following additional function:
+
+* `parse_yaml(String) -> Dynamic` -- Takes YAML payload as string and returns
   the parsed payload as unstructured data (such as, RHAI object map or array).
 
 * `stringify_yaml(Dynamic) -> String` -- Convert a RHAI object to a YAML
   string, inverse of `parse_yaml`.
 
-* `stringify_json(Dynamic) -> String` -- Convert a RHAI object to a YAML
-  string, inverse of `parse_json`.
+### `features = ["glob"]`
+
+Adds `glob` crate and defines the following additional function:
 
 * `glob(String) -> Vec<PathBuf>` -- Takes a glob pattern and returns a list of paths that match it.
+
+### `features = ["filesystem"]`
+
+Adds [`rhai-fs`](https://docs.rs/rhai-fs/latest/rhai_fs/) and defines the
+following additional function:
 
 * `basename(PathBuf) -> String` -- Returns the `.file_name()` of the given
   path, or the entire path if there is none.

@@ -2,12 +2,10 @@
 
 extern crate proc_macro;
 
-use std::fmt::Debug;
 use std::path::PathBuf;
 
 use proc_macro::TokenStream;
-use rhai::{packages::Package, Dynamic, Engine, EvalAltResult, ImmutableString, Position, Scope};
-use rhai_fs::FilesystemPackage;
+use rhai::{Engine, EvalAltResult, ImmutableString, Position, Scope};
 use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input, LitStr,
@@ -98,39 +96,59 @@ fn get_default_engine() -> Engine {
 
     engine.set_max_expr_depths(100, 100);
 
+    #[cfg(feature = "parse-yaml")]
     engine.register_fn("parse_yaml", helper_parse_yaml);
+    #[cfg(feature = "parse-json")]
     engine.register_fn("parse_json", helper_parse_json);
+    #[cfg(feature = "parse-yaml")]
     engine.register_fn("stringify_yaml", helper_stringify_yaml);
+    #[cfg(feature = "parse-json")]
     engine.register_fn("stringify_json", helper_stringify_json);
     engine.register_fn("slugify_ident", helper_slugify_ident);
+    #[cfg(feature = "glob")]
     engine.register_fn("glob", helper_glob);
     engine.register_fn("basename", helper_basename);
 
-    let package = FilesystemPackage::new();
-    package.register_into_engine(&mut engine);
+    #[cfg(feature = "filesystem")]
+    {
+        use rhai::packages::Package;
+        use rhai_fs::FilesystemPackage;
+        let package = FilesystemPackage::new();
+        package.register_into_engine(&mut engine);
+    }
 
     engine
 }
 
-fn coerce_err(x: impl Debug) -> Box<EvalAltResult> {
+#[cfg(any(
+    feature = "parse-yaml",
+    feature = "parse-json",
+    feature = "filesystem",
+    feature = "glob",
+))]
+fn coerce_err(x: impl std::fmt::Debug) -> Box<EvalAltResult> {
     format!("{x:?}").into()
 }
 
-fn helper_parse_yaml(input: ImmutableString) -> Result<Dynamic, Box<EvalAltResult>> {
+#[cfg(feature = "parse-yaml")]
+fn helper_parse_yaml(input: ImmutableString) -> Result<rhai::Dynamic, Box<EvalAltResult>> {
     serde_yaml::from_str(input.as_str()).map_err(coerce_err)
 }
 
-fn helper_stringify_yaml(input: Dynamic) -> Result<ImmutableString, Box<EvalAltResult>> {
+#[cfg(feature = "parse-yaml")]
+fn helper_stringify_yaml(input: rhai::Dynamic) -> Result<ImmutableString, Box<EvalAltResult>> {
     serde_yaml::to_string(&input)
         .map(From::from)
         .map_err(coerce_err)
 }
 
-fn helper_parse_json(input: ImmutableString) -> Result<Dynamic, Box<EvalAltResult>> {
+#[cfg(feature = "parse-json")]
+fn helper_parse_json(input: ImmutableString) -> Result<rhai::Dynamic, Box<EvalAltResult>> {
     serde_json::from_str(input.as_str()).map_err(coerce_err)
 }
 
-fn helper_stringify_json(input: Dynamic) -> Result<ImmutableString, Box<EvalAltResult>> {
+#[cfg(feature = "parse-json")]
+fn helper_stringify_json(input: rhai::Dynamic) -> Result<ImmutableString, Box<EvalAltResult>> {
     serde_json::to_string(&input)
         .map(From::from)
         .map_err(coerce_err)
@@ -154,7 +172,8 @@ fn helper_slugify_ident(input: ImmutableString) -> ImmutableString {
         .into()
 }
 
-fn helper_glob(pattern: ImmutableString) -> Result<Dynamic, Box<EvalAltResult>> {
+#[cfg(feature = "glob")]
+fn helper_glob(pattern: ImmutableString) -> Result<rhai::Dynamic, Box<EvalAltResult>> {
     let mut result = Vec::new();
 
     for entry in glob::glob(pattern.as_str()).map_err(coerce_err)? {
